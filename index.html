@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Life Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface-2: #F0EDE8;
+    --border: rgba(0,0,0,0.08);
+    --border-med: rgba(0,0,0,0.14);
+    --text: #1A1814;
+    --text-2: #6B6760;
+    --text-3: #A8A49E;
+    --accent: #1A1814;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo h1 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .sidebar-logo p {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    border-radius: 0;
+    transition: color 0.15s, background 0.15s;
+    font-family: var(--font-body);
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface-2); }
+  .nav-item.active { color: var(--text); font-weight: 500; background: var(--surface-2); }
+  .nav-item .nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .nav-item .nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 20px 24px 0;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-3);
+    line-height: 1.5;
+  }
+
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 40px 48px;
+    max-width: 900px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 { font-family: var(--font-display); font-size: 28px; font-weight: 400; color: var(--text); line-height: 1.2; }
+  .page-header p { font-size: 13px; color: var(--text-2); margin-top: 5px; }
+
+  /* ── FORM ELEMENTS ── */
+  input[type="text"], input[type="date"], input[type="month"], select, textarea {
+    font-size: 13px;
+    font-family: var(--font-body);
+    padding: 0 12px;
+    height: 38px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-med);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: rgba(0,0,0,0.3); }
+  textarea { height: auto; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+  select option { background: var(--surface); }
+
+  .btn {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-med);
+    background: var(--text);
+    color: #fff;
+    font-size: 13px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.82; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-2);
+    border-color: var(--border-med);
+  }
+  .btn-ghost:hover { background: var(--surface-2); color: var(--text); opacity: 1; }
+
+  .icon-btn {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-3);
+    font-size: 14px;
+    transition: background 0.12s, color 0.12s;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .row input[type="text"] { flex: 1; min-width: 140px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .card + .card { margin-top: 10px; }
+
+  /* ── SECTION LABEL ── */
+  .label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  .empty { text-align: center; padding: 2rem; color: var(--text-3); font-size: 13px; font-style: italic; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+  .stat-lbl { font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+  .stat-val { font-size: 24px; font-family: var(--font-display); font-weight: 400; color: var(--text); }
+  .prog-bar { height: 3px; border-radius: 2px; background: var(--border-med); margin-top: 8px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 2px; background: var(--text); transition: width 0.4s; }
+
+  /* ── PRIORITIES ── */
+  .top5-banner {
+    background: var(--text);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  .top5-banner .label { color: rgba(255,255,255,0.45); margin-bottom: 14px; }
+  .top5-items { display: flex; flex-direction: column; gap: 8px; }
+  .top5-item { display: flex; align-items: center; gap: 12px; }
+  .top5-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 500; flex-shrink: 0;
+    color: rgba(255,255,255,0.6);
+  }
+  .top5-text { font-size: 14px; color: #fff; }
+  .top5-empty { font-size: 13px; color: rgba(255,255,255,0.35); font-style: italic; }
+
+  .pri-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 5px;
+    cursor: grab;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .pri-item:hover { border-color: var(--border-med); }
+  .pri-item.dragging { opacity: 0.35; }
+  .pri-item.drag-over { border-color: var(--text); box-shadow: 0 0 0 2px rgba(26,24,20,0.08); }
+  .pri-handle { color: var(--text-3); font-size: 12px; cursor: grab; user-select: none; padding: 0 2px; }
+  .pri-rank {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 500; flex-shrink: 0;
+  }
+  .pri-rank.top { background: var(--text); color: #fff; }
+  .pri-rank.rest { background: var(--surface-2); color: var(--text-3); }
+  .pri-input {
+    flex: 1; border: none; background: transparent;
+    font-size: 14px; color: var(--text);
+    font-family: var(--font-body); outline: none;
+    padding: 0; height: auto; min-width: 0;
+  }
+  .pri-sep { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); padding: 6px 0 2px; }
+  .pri-count { font-size: 12px; color: var(--text-3); margin-bottom: 10px; }
+
+  /* ── FOCUS PERIODS ── */
+  .focus-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .focus-inner { display: flex; align-items: stretch; }
+  .focus-stripe { width: 5px; flex-shrink: 0; }
+  .focus-body { padding: 12px 16px; flex: 1; min-width: 0; }
+  .focus-range { font-size: 10px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 3px; }
+  .focus-theme { font-size: 15px; font-family: var(--font-display); font-weight: 400; }
+  .focus-sub { font-size: 11px; margin-top: 2px; opacity: 0.6; }
+  .focus-note { font-size: 12px; color: var(--text-2); margin-top: 6px; white-space: pre-wrap; line-height: 1.5; }
+  .focus-actions { display: flex; align-items: center; padding: 0 8px; gap: 2px; }
+  .focus-note-inp {
+    width: 100%; margin-top: 8px; min-height: 56px;
+    font-size: 13px; padding: 8px 10px;
+    border-radius: 8px; border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.45); color: var(--text);
+    resize: vertical; font-family: var(--font-body);
+  }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── FILTER TABS ── */
+  .filter-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 18px; }
+  .filter-tab {
+    height: 28px; padding: 0 12px; border-radius: 99px;
+    font-size: 12px; cursor: pointer;
+    border: 1px solid var(--border-med);
+    background: transparent; color: var(--text-2);
+    font-family: var(--font-body);
+    transition: all 0.12s;
+  }
+  .filter-tab:hover { color: var(--text); }
+  .filter-tab.active { background: var(--text); color: #fff; border-color: transparent; }
+
+  /* ── DEADLINES ── */
+  .month-group { margin-bottom: 20px; }
+  .month-label {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3);
+    margin-bottom: 8px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dl-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    transition: border-color 0.12s;
+  }
+  .dl-item:hover { border-color: var(--border-med); }
+  .dl-item.done { opacity: 0.4; }
+  .dl-item.done .dl-title { text-decoration: line-through; }
+  .dl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .dl-body { flex: 1; min-width: 0; }
+  .dl-title { font-size: 14px; color: var(--text); }
+  .dl-meta { font-size: 11px; color: var(--text-3); margin-top: 3px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .dl-badge { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+  .urg { font-size: 10px; padding: 2px 7px; border-radius: 99px; font-weight: 500; }
+  .dl-actions { display: flex; gap: 2px; flex-shrink: 0; }
+
+  /* ── WEEKLY REVIEW ── */
+  .week-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .week-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--text); }
+  .week-nav { display: flex; gap: 6px; }
+  .review-prog { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .review-prog-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--border-med); overflow: hidden; }
+  .review-prog-fill { height: 100%; border-radius: 2px; background: var(--text); transition: width 0.3s; }
+  .review-prog-lbl { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+  .rev-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; overflow: hidden; }
+  .rev-head { padding: 12px 16px; background: var(--surface-2); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+  .rev-head-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .rev-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .check-item { display: flex; align-items: flex-start; gap: 10px; }
+  .check-box {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1px solid var(--border-med); background: var(--surface);
+    cursor: pointer; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: transparent;
+    transition: all 0.12s;
+  }
+  .check-box.checked { background: var(--text); border-color: var(--text); color: #fff; }
+  .check-lbl { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+  .check-lbl.checked { text-decoration: line-through; color: var(--text-3); }
+  .rev-textarea {
+    width: 100%; min-height: 80px; font-size: 13px;
+    border-radius: var(--radius); border: 1px solid var(--border-med);
+    background: var(--surface-2); color: var(--text);
+    font-family: var(--font-body); padding: 10px 12px; resize: vertical;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Life<br>Planner</h1>
+      <p>Your personal OS</p>
+    </div>
+    <button class="nav-item active" onclick="showPage('priorities')">
+      <span class="nav-icon">◈</span> Priorities
+    </button>
+    <button class="nav-item" onclick="showPage('review')">
+      <span class="nav-icon">◇</span> Weekly review
+    </button>
+    <button class="nav-item" onclick="showPage('focus')">
+      <span class="nav-icon">◉</span> Focus periods
+    </button>
+    <button class="nav-item" onclick="showPage('deadlines')">
+      <span class="nav-icon">◎</span> Deadlines
+    </button>
+    <div class="sidebar-footer">
+      <div id="sidebar-date"></div>
+      <div id="save-status" style="margin-top:6px;font-size:10px;color:var(--text-3)"></div>
+      <button onclick="clearAll()" style="margin-top:10px;font-size:11px;color:var(--text-3);background:transparent;border:none;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline;">Clear all data</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── PRIORITIES ── -->
+    <div id="page-priorities" class="page active">
+      <div class="page-header">
+        <h2>Priorities</h2>
+        <p>Up to 20 — but protect your top 5 above everything else.</p>
+      </div>
+      <div class="top5-banner">
+        <div class="label">Top 5 — focus zone</div>
+        <div class="top5-items" id="top5"></div>
+      </div>
+      <div class="pri-count" id="pri-count"></div>
+      <div class="row">
+        <input type="text" id="pri-inp" placeholder="Add a priority…" maxlength="100" />
+        <button class="btn" onclick="addPriority()">+ Add</button>
+      </div>
+      <div id="pri-list"></div>
+    </div>
+
+    <!-- ── WEEKLY REVIEW ── -->
+    <div id="page-review" class="page">
+      <div class="page-header">
+        <h2>Weekly review</h2>
+        <p>15 minutes. Every Friday. Non-negotiable.</p>
+      </div>
+      <div class="week-header">
+        <div class="week-title" id="week-label"></div>
+        <div class="week-nav">
+          <button class="btn btn-ghost" onclick="changeWeek(-1)">← Prev</button>
+          <button class="btn btn-ghost" onclick="changeWeek(0)">Today</button>
+          <button class="btn btn-ghost" onclick="changeWeek(1)">Next →</button>
+        </div>
+      </div>
+      <div class="review-prog">
+        <div class="review-prog-bar"><div class="review-prog-fill" id="rev-prog-fill" style="width:0%"></div></div>
+        <div class="review-prog-lbl" id="rev-prog-lbl">0 / 0 done</div>
+      </div>
+      <div id="review-sections"></div>
+    </div>
+
+    <!-- ── FOCUS PERIODS ── -->
+    <div id="page-focus" class="page">
+      <div class="page-header">
+        <h2>Focus periods</h2>
+        <p>Set themes for blocks of months so your calendar reflects your intentions.</p>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="row">
+        <input type="text" id="f-theme" placeholder="Theme or intention…" maxlength="80" style="flex:2;min-width:160px" />
+        <input type="month" id="f-from" style="width:148px" />
+        <input type="month" id="f-to" style="width:148px" />
+        <select id="f-color" style="width:180px"></select>
+        <button class="btn" onclick="addFocus()">+ Add</button>
+      </div>
+      <div id="focus-list"></div>
+    </div>
+
+    <!-- ── DEADLINES ── -->
+    <div id="page-deadlines" class="page">
+      <div class="page-header">
+        <h2>Deadlines</h2>
+        <p>Track what needs to happen and when.</p>
+      </div>
+      <div class="stats-row" id="stats-row"></div>
+      <div class="row">
+        <input type="text" id="inp-title" placeholder="Add a new deadline…" maxlength="80" />
+        <input type="date" id="inp-date" style="width:155px" />
+        <select id="inp-cat" style="width:180px"></select>
+        <button class="btn" onclick="addDeadline()">+ Add</button>
+      </div>
+      <div class="filter-tabs" id="filter-tabs"></div>
+      <div id="timeline"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── COLOUR SYSTEM ──────────────────────────────────────────────────────
+const C = {
+  startup:  { label:'Startup (Rollup)',  sub:'Founder calls, pitch prep, research',  dot:'#7C3AED', stripe:'#7C3AED', bg:'#EDE9FE', tx:'#3B0764', rng:'#5B21B6' },
+  target:   { label:'Target Global',    sub:'Deals, portfolio, team syncs',          dot:'#2563EB', stripe:'#2563EB', bg:'#DBEAFE', tx:'#1E3A8A', rng:'#1D4ED8' },
+  deep:     { label:'Deep Work',         sub:'Focus blocks, modelling, writing',      dot:'#DC2626', stripe:'#DC2626', bg:'#FEE2E2', tx:'#7F1D1D', rng:'#B91C1C' },
+  health:   { label:'Health & Fitness',  sub:'Gym, runs, Hyrox, meal prep',           dot:'#16A34A', stripe:'#16A34A', bg:'#DCFCE7', tx:'#14532D', rng:'#15803D' },
+  personal: { label:'Personal & Social', sub:'Friends, family, networking socials',   dot:'#CA8A04', stripe:'#CA8A04', bg:'#FEF9C3', tx:'#713F12', rng:'#A16207' },
+  admin:    { label:'Admin & Errands',   sub:'Travel, Bupa, banking, life admin',     dot:'#EA580C', stripe:'#EA580C', bg:'#FFEDD5', tx:'#7C2D12', rng:'#C2410C' },
+  tbd:      { label:'Tentative / TBD',   sub:'Placeholders, unconfirmed holds',       dot:'#9CA3AF', stripe:'#9CA3AF', bg:'#F3F4F6', tx:'#374151', rng:'#6B7280' },
+};
+
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MF = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ── STATE ─────────────────────────────────────────────────────────────
+let priorities = [], focuses = [], deadlines = [];
+let activeFilter = 'all', editingNote = null;
+let weekOffset = 0, reviewData = {};
+
+const today = new Date(); today.setHours(0,0,0,0);
+const todayStr = () => today.toISOString().slice(0,10);
+const thisMonth = () => `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const nxt = d => { const mo=((today.getMonth()+d)%12)+1, yr=today.getFullYear()+Math.floor((today.getMonth()+d)/12); return `${yr}-${String(mo).padStart(2,'0')}`; };
+
+// ── SIDEBAR DATE ──────────────────────────────────────────────────────
+document.getElementById('sidebar-date').textContent = today.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+
+// ── NAVIGATION ────────────────────────────────────────────────────────
+const PAGES = ['priorities','review','focus','deadlines'];
+function showPage(name) {
+  PAGES.forEach(p => {
+    document.getElementById(`page-${p}`).classList.toggle('active', p === name);
+  });
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', PAGES[i] === name);
+  });
+  if (name === 'review') renderReview();
+}
+
+// ── WEEKLY REVIEW ─────────────────────────────────────────────────────
+const REVIEW_TEMPLATE = [
+  { icon:'◈', title:'Look back', checks:[
+    'What were my 3 biggest wins this week?',
+    'What did I not finish — and why?',
+    'Did I protect my top 5 priorities?',
+    'What drained my energy most?',
+    'What am I proud of?',
+  ]},
+  { icon:'◈', title:'Look forward', checks:[
+    'What are my 3 most important outcomes for next week?',
+    'What can I defer, delegate or delete?',
+    'Which priority needs the most attention next week?',
+    'Are there any deadlines approaching I need to act on?',
+    'What one habit do I want to reinforce?',
+  ]},
+  { icon:'◈', title:'Life check-in', checks:[
+    'Health: am I sleeping, moving and eating well?',
+    'Relationships: have I invested time in people I care about?',
+    'Career: am I moving forward on what matters most?',
+    'Personal growth: did I learn something meaningful?',
+    'Joy: did I make time for things that energise me?',
+  ]},
+  { icon:'◈', title:'Free notes', type:'textarea', placeholder:'Reflections, ideas, anything on your mind…' },
+];
+
+function getWeekKey(offset) {
+  const d = new Date(today);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff + offset * 7);
+  return d.toISOString().slice(0,10);
+}
+function getWeekLabel(offset) {
+  const d = new Date(today);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff + offset * 7);
+  const end = new Date(d); end.setDate(d.getDate() + 6);
+  const fmt = x => `${x.getDate()} ${MN[x.getMonth()]} ${x.getFullYear()}`;
+  if (offset === 0) return `This week · ${fmt(d)} – ${fmt(end)}`;
+  if (offset === -1) return `Last week · ${fmt(d)} – ${fmt(end)}`;
+  if (offset === 1) return `Next week · ${fmt(d)} – ${fmt(end)}`;
+  return `${fmt(d)} – ${fmt(end)}`;
+}
+function ensureWeekData(key) { if (!reviewData[key]) reviewData[key] = { checks:{}, notes:{} }; }
+
+function renderReview() {
+  const key = getWeekKey(weekOffset);
+  ensureWeekData(key);
+  document.getElementById('week-label').textContent = getWeekLabel(weekOffset);
+  const data = reviewData[key];
+  let total = 0, done = 0;
+  REVIEW_TEMPLATE.forEach((s,si) => { if (s.checks) s.checks.forEach((_,ci) => { total++; if (data.checks[`${si}-${ci}`]) done++; }); });
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('rev-prog-fill').style.width = pct + '%';
+  document.getElementById('rev-prog-lbl').textContent = `${done} / ${total} done`;
+  document.getElementById('review-sections').innerHTML = REVIEW_TEMPLATE.map((sec,si) => {
+    if (sec.type === 'textarea') {
+      return `<div class="rev-block">
+        <div class="rev-head"><span class="rev-head-title">${sec.title}</span></div>
+        <div class="rev-body">
+          <textarea class="rev-textarea" placeholder="${esc(sec.placeholder)}" onchange="saveRevNote(${si},'${key}',this.value)">${esc(data.notes[si]||'')}</textarea>
+        </div>
+      </div>`;
+    }
+    return `<div class="rev-block">
+      <div class="rev-head"><span class="rev-head-title">${sec.title}</span></div>
+      <div class="rev-body">
+        ${sec.checks.map((c,ci) => {
+          const checked = !!data.checks[`${si}-${ci}`];
+          return `<div class="check-item">
+            <div class="check-box ${checked?'checked':''}" onclick="toggleCheck('${key}',${si},${ci})">${checked?'✓':''}</div>
+            <div class="check-lbl ${checked?'checked':''}">${esc(c)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleCheck(key,si,ci) { ensureWeekData(key); reviewData[key].checks[`${si}-${ci}`] = !reviewData[key].checks[`${si}-${ci}`]; renderReview(); }
+function saveRevNote(si,key,val) { ensureWeekData(key); reviewData[key].notes[si] = val; }
+function changeWeek(dir) { if (dir===0) weekOffset=0; else weekOffset+=dir; renderReview(); }
+
+// ── PRIORITIES ────────────────────────────────────────────────────────
+let dragSrc = null;
+function renderPriorities() {
+  const top5 = priorities.slice(0,5);
+  const t5el = document.getElementById('top5');
+  t5el.innerHTML = top5.length
+    ? top5.map((p,i) => `<div class="top5-item"><div class="top5-num">${i+1}</div><div class="top5-text">${esc(p.text)}</div></div>`).join('')
+    : `<div class="top5-empty">Add your first priority below — it will appear here</div>`;
+  document.getElementById('pri-count').innerHTML = `<span style="font-size:12px;color:var(--text-3)">${priorities.length} / 20 priorities</span>`;
+  let html = '';
+  priorities.forEach((p,i) => {
+    if (i === 5 && priorities.length > 5) html += `<div class="pri-sep">Outside top 5 — avoid at all costs</div>`;
+    html += `<div class="pri-item" draggable="true" data-idx="${i}"
+      ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})" ondrop="dragDrop(event,${i})"
+      ondragleave="dragLeave(event)" ondragend="dragEnd()">
+      <span class="pri-handle">⠿</span>
+      <div class="pri-rank ${i<5?'top':'rest'}">${i+1}</div>
+      <input class="pri-input" type="text" value="${esc(p.text)}" maxlength="100" onchange="updatePri(${i},this.value)" />
+      <button class="icon-btn" onclick="deletePri(${i})">✕</button>
+    </div>`;
+  });
+  if (!priorities.length) html = `<div class="empty">No priorities yet — add up to 20 above</div>`;
+  document.getElementById('pri-list').innerHTML = html;
+}
+function addPriority() {
+  const inp = document.getElementById('pri-inp');
+  const text = inp.value.trim();
+  if (!text || priorities.length >= 20) return;
+  priorities.push({ id: Date.now(), text });
+  inp.value = '';
+  renderPriorities();
+}
+function deletePri(i) { priorities.splice(i,1); renderPriorities(); }
+function updatePri(i,val) { if (priorities[i]) priorities[i].text = val.trim(); }
+function dragStart(e,i) { dragSrc=i; setTimeout(()=>{ const el=document.querySelector(`.pri-item[data-idx="${i}"]`); if(el)el.classList.add('dragging'); },0); }
+function dragOver(e,i) { e.preventDefault(); document.querySelectorAll('.pri-item').forEach(el=>el.classList.remove('drag-over')); const el=document.querySelector(`.pri-item[data-idx="${i}"]`); if(el)el.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dragDrop(e,i) { e.preventDefault(); if(dragSrc===null||dragSrc===i)return; const item=priorities.splice(dragSrc,1)[0]; priorities.splice(i,0,item); dragSrc=null; renderPriorities(); }
+function dragEnd() { dragSrc=null; document.querySelectorAll('.pri-item').forEach(el=>el.classList.remove('dragging','drag-over')); }
+document.getElementById('pri-inp').addEventListener('keydown', e => { if (e.key==='Enter') addPriority(); });
+
+// ── FOCUS PERIODS ─────────────────────────────────────────────────────
+function buildSelects() {
+  const opts = Object.entries(C).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+  document.getElementById('f-color').innerHTML = opts;
+  document.getElementById('inp-cat').innerHTML = opts;
+  document.getElementById('legend').innerHTML = Object.entries(C).map(([k,v]) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${v.dot}"></div>${v.label}</div>`
+  ).join('');
+}
+
+function seedFocus() {
+  focuses = [
+    { id:1, theme:'Pitch prep & cofounder deep dives', from:nxt(0), to:nxt(1), color:'startup', note:'Weekly founder calls, refine deck, close cofounder search.' },
+    { id:2, theme:'Portfolio review & new deal flow',  from:nxt(1), to:nxt(2), color:'target',  note:'Q2 portfolio check-ins, 3 new deals to close.' },
+    { id:3, theme:'Hyrox training block',              from:nxt(2), to:nxt(3), color:'health',  note:'4x gym per week, Sunday long run, no alcohol.' },
+  ];
+}
+
+function renderFocus() {
+  const el = document.getElementById('focus-list');
+  if (!focuses.length) { el.innerHTML=`<div class="empty">No focus periods yet</div>`; return; }
+  el.innerHTML = [...focuses].sort((a,b)=>a.from.localeCompare(b.from)).map(f => {
+    const c = C[f.color]||C.tbd;
+    const fmtS = s => { const[y,m]=s.split('-').map(Number); return `${MN[m-1]} ${y}`; };
+    const fmtF = s => { const[y,m]=s.split('-').map(Number); return `${MF[m-1]} ${y}`; };
+    const range = f.from===f.to ? fmtF(f.from) : `${fmtS(f.from)} – ${fmtS(f.to)}`;
+    const ed = editingNote===f.id;
+    return `<div class="focus-card"><div class="focus-inner">
+      <div class="focus-stripe" style="background:${c.stripe}"></div>
+      <div class="focus-body" style="background:${c.bg}">
+        <div class="focus-range" style="color:${c.rng}">${range}</div>
+        <div class="focus-theme" style="color:${c.tx}">${esc(f.theme)}</div>
+        <div class="focus-sub" style="color:${c.rng}">${c.sub}</div>
+        ${!ed && f.note ? `<div class="focus-note">${esc(f.note)}</div>` : ''}
+        ${ed ? `<textarea class="focus-note-inp" id="ni-${f.id}" onblur="saveNote_f(${f.id})" onkeydown="nKey(event,${f.id})">${esc(f.note||'')}</textarea>` : ''}
+      </div>
+      <div class="focus-actions">
+        <button class="icon-btn" onclick="toggleNote_f(${f.id})" title="Edit note">✎</button>
+        <button class="icon-btn" onclick="delFocus(${f.id})" title="Delete">✕</button>
+      </div>
+    </div></div>`;
+  }).join('');
+  if (editingNote !== null) {
+    const e = document.getElementById(`ni-${editingNote}`);
+    if (e) { e.focus(); e.selectionStart = e.selectionEnd = e.value.length; }
+  }
+}
+function addFocus() {
+  const theme=document.getElementById('f-theme').value.trim();
+  const from=document.getElementById('f-from').value;
+  const to=document.getElementById('f-to').value;
+  const color=document.getElementById('f-color').value;
+  if (!theme||!from) return;
+  focuses.push({ id:Date.now(), theme, from, to:to&&to>=from?to:from, color, note:'' });
+  document.getElementById('f-theme').value = '';
+  renderFocus();
+}
+function delFocus(id) { focuses=focuses.filter(f=>f.id!==id); if(editingNote===id) editingNote=null; renderFocus(); }
+function toggleNote_f(id) { editingNote=editingNote===id?null:id; renderFocus(); }
+function saveNote_f(id) { const e=document.getElementById(`ni-${id}`); if(!e)return; const f=focuses.find(x=>x.id===id); if(f)f.note=e.value.trim(); editingNote=null; renderFocus(); }
+function nKey(e,id) { if(e.key==='Escape'){editingNote=null;renderFocus();} }
+document.getElementById('f-theme').addEventListener('keydown', e => { if(e.key==='Enter') addFocus(); });
+
+// ── DEADLINES ─────────────────────────────────────────────────────────
+function seedDeadlines() {
+  const d=(m,day)=>{ const mo=((today.getMonth()+m)%12), yr=today.getFullYear()+Math.floor((today.getMonth()+m)/12); return `${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; };
+  deadlines = [
+    { id:1, title:'Submit pitch deck to LP',        date:d(0,today.getDate()+6), cat:'startup',  done:false },
+    { id:2, title:'Bupa health screening',          date:d(0,today.getDate()+10),cat:'admin',    done:false },
+    { id:3, title:'Target Global portfolio update', date:d(1,8),                 cat:'target',   done:false },
+    { id:4, title:'Hyrox race day',                 date:d(1,22),                cat:'health',   done:false },
+    { id:5, title:'Q2 financial review',            date:d(2,1),                 cat:'admin',    done:false },
+    { id:6, title:'Summer trip planning',           date:d(2,15),                cat:'personal', done:false },
+    { id:7, title:'Deep work sprint — modelling',   date:d(3,5),                 cat:'deep',     done:false },
+  ];
+}
+
+const parseDate = s => { const[y,m,d]=s.split('-').map(Number); const dt=new Date(y,m-1,d); dt.setHours(0,0,0,0); return dt; };
+const fmtDate  = s => { const[y,m,d]=s.split('-').map(Number); return `${d} ${MN[m-1]} ${y}`; };
+function urgency(s) {
+  const diff = Math.round((parseDate(s)-today)/86400000);
+  if (diff<0)  return { l:'Overdue',  st:'background:#FEE2E2;color:#7F1D1D;' };
+  if (diff===0)return { l:'Today',    st:'background:#FEF9C3;color:#713F12;' };
+  if (diff<=7) return { l:`${diff}d left`, st:'background:#FEF9C3;color:#713F12;' };
+  if (diff<=30)return { l:`${diff}d`, st:'background:#DBEAFE;color:#1E3A8A;' };
+  return null;
+}
+
+function renderDeadlines() {
+  const t=deadlines.length, d=deadlines.filter(x=>x.done).length;
+  const ov=deadlines.filter(x=>!x.done&&parseDate(x.date)<today).length;
+  const p=t?Math.round((d/t)*100):0;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val">${t}</div></div>
+    <div class="stat"><div class="stat-lbl">Completed</div><div class="stat-val">${d}</div></div>
+    <div class="stat"><div class="stat-lbl">Overdue</div><div class="stat-val" style="color:${ov?'#B91C1C':'inherit'}">${ov}</div></div>
+    <div class="stat"><div class="stat-lbl">Progress</div><div class="stat-val">${p}%</div><div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div></div>`;
+
+  const cats=['all',...Object.keys(C)];
+  const cnt={}; deadlines.forEach(x=>{cnt[x.cat]=(cnt[x.cat]||0)+1;});
+  document.getElementById('filter-tabs').innerHTML = cats.map(c => {
+    const a=c===activeFilter?'active':'';
+    const l=c==='all'?`All (${t})`:`${C[c].label}${cnt[c]?' ('+cnt[c]+')':''}`;
+    return `<button class="filter-tab ${a}" onclick="setFilter('${c}')">${l}</button>`;
+  }).join('');
+
+  let list=[...deadlines];
+  if (activeFilter!=='all') list=list.filter(x=>x.cat===activeFilter);
+  list.sort((a,b)=>a.date.localeCompare(b.date));
+  if (!list.length) { document.getElementById('timeline').innerHTML=`<div class="empty">No deadlines yet — add one above</div>`; return; }
+  const grp={};
+  list.forEach(dl=>{ const k=dl.date.slice(0,7); if(!grp[k])grp[k]=[]; grp[k].push(dl); });
+  let html='';
+  Object.keys(grp).sort().forEach(key=>{
+    const[y,m]=key.split('-').map(Number);
+    const lbl=(y===today.getFullYear()&&m===today.getMonth()+1)?`${MN[m-1]} ${y} — this month`:`${MN[m-1]} ${y}`;
+    html+=`<div class="month-group"><div class="month-label">${lbl}</div>`;
+    grp[key].forEach(dl=>{
+      const c=C[dl.cat]||C.tbd, u=urgency(dl.date);
+      html+=`<div class="dl-item ${dl.done?'done':''}">
+        <div class="dl-dot" style="background:${c.dot}"></div>
+        <div class="dl-body">
+          <div class="dl-title">${esc(dl.title)}</div>
+          <div class="dl-meta">
+            <span class="dl-badge" style="background:${c.bg};color:${c.tx}">${c.label}</span>
+            <span>${fmtDate(dl.date)}</span>
+            ${u?`<span class="urg" style="${u.st}">${u.l}</span>`:''}
+          </div>
+        </div>
+        <div class="dl-actions">
+          <button class="icon-btn" onclick="toggleDone(${dl.id})" title="${dl.done?'Mark incomplete':'Mark done'}">${dl.done?'↩':'✓'}</button>
+          <button class="icon-btn" onclick="delDeadline(${dl.id})" title="Delete">✕</button>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('timeline').innerHTML=html;
+}
+function setFilter(cat) { activeFilter=cat; renderDeadlines(); }
+function addDeadline() {
+  const title=document.getElementById('inp-title').value.trim();
+  const date=document.getElementById('inp-date').value;
+  const cat=document.getElementById('inp-cat').value;
+  if (!title||!date) return;
+  deadlines.push({ id:Date.now(), title, date, cat, done:false });
+  document.getElementById('inp-title').value='';
+  renderDeadlines();
+}
+function toggleDone(id) { const d=deadlines.find(x=>x.id===id); if(d){d.done=!d.done;renderDeadlines();} }
+function delDeadline(id) { deadlines=deadlines.filter(d=>d.id!==id); renderDeadlines(); }
+document.getElementById('inp-title').addEventListener('keydown', e => { if(e.key==='Enter') addDeadline(); });
+
+// ── PERSISTENCE ───────────────────────────────────────────────────────
+const LS_KEY = 'lifeplanner_v1';
+
+function saveAll() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ priorities, focuses, deadlines, reviewData }));
+  } catch(e) {}
+}
+
+function loadAll() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.priorities)  priorities  = data.priorities;
+    if (data.focuses)     focuses     = data.focuses;
+    if (data.deadlines)   deadlines   = data.deadlines;
+    if (data.reviewData)  reviewData  = data.reviewData;
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearAll() {
+  if (!confirm('Clear all saved data? This cannot be undone.')) return;
+  localStorage.removeItem(LS_KEY);
+  priorities = []; focuses = []; deadlines = []; reviewData = {};
+  seedFocus(); seedDeadlines();
+  renderPriorities(); renderFocus(); renderDeadlines();
+  if (document.getElementById('page-review').classList.contains('active')) renderReview();
+}
+
+// Patch all mutating functions to auto-save after state change
+const _addPriority   = addPriority;
+const _deletePri     = deletePri;
+const _dragDrop      = dragDrop;
+const _addFocus      = addFocus;
+const _delFocus      = delFocus;
+const _saveNote_f    = saveNote_f;
+const _addDeadline   = addDeadline;
+const _toggleDone    = toggleDone;
+const _delDeadline   = delDeadline;
+const _toggleCheck   = toggleCheck;
+const _saveRevNote   = saveRevNote;
+
+addPriority  = function()    { _addPriority();       saveAll(); };
+deletePri    = function(i)   { _deletePri(i);         saveAll(); };
+dragDrop     = function(e,i) { _dragDrop(e,i);        saveAll(); };
+addFocus     = function()    { _addFocus();            saveAll(); };
+delFocus     = function(id)  { _delFocus(id);          saveAll(); };
+saveNote_f   = function(id)  { _saveNote_f(id);        saveAll(); };
+addDeadline  = function()    { _addDeadline();         saveAll(); };
+toggleDone   = function(id)  { _toggleDone(id);        saveAll(); };
+delDeadline  = function(id)  { _delDeadline(id);       saveAll(); };
+toggleCheck  = function(k,si,ci) { _toggleCheck(k,si,ci); saveAll(); };
+saveRevNote  = function(si,k,v)  { _saveRevNote(si,k,v);  saveAll(); };
+
+// Also save when priority text is edited inline
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('pri-input')) saveAll();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────
+const di = document.getElementById('inp-date');
+di.min = todayStr();
+di.value = (() => { const d=new Date(today); d.setDate(d.getDate()+30); return d.toISOString().slice(0,10); })();
+document.getElementById('f-from').value = thisMonth();
+document.getElementById('f-to').value = thisMonth();
+
+buildSelects();
+const hadData = loadAll();
+if (!hadData) { seedFocus(); seedDeadlines(); }
+renderPriorities(); renderFocus(); renderDeadlines();
+
+// Show save indicator in footer
+document.getElementById('save-status').textContent = hadData ? 'Data loaded from last session' : 'New session — data will auto-save';
+</script>
+</body>
+</html>
