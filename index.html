@@ -373,9 +373,6 @@
     <button class="nav-item" onclick="showPage('deadlines')">
       <span class="nav-icon">◎</span> Deadlines
     </button>
-    <button class="nav-item" onclick="showPage('schedule')">
-      <span class="nav-icon">◷</span> Schedule
-    </button>
     <div class="sidebar-footer">
       <div id="sidebar-date"></div>
       <div id="save-status" style="margin-top:6px;font-size:10px;color:var(--text-3)"></div>
@@ -464,6 +461,9 @@
     </div>
 
 
+  </main>
+</div>
+
 <script>
 // ── COLOUR SYSTEM ──────────────────────────────────────────────────────
 const C = {
@@ -494,7 +494,7 @@ const nxt = d => { const mo=((today.getMonth()+d)%12)+1, yr=today.getFullYear()+
 document.getElementById('sidebar-date').textContent = today.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
 
 // ── NAVIGATION ────────────────────────────────────────────────────────
-const PAGES = ['priorities','review','focus','deadlines','schedule'];
+const PAGES = ['priorities','review','focus','deadlines'];
 function showPage(name) {
   PAGES.forEach(p => {
     document.getElementById(`page-${p}`).classList.toggle('active', p === name);
@@ -503,7 +503,6 @@ function showPage(name) {
     el.classList.toggle('active', PAGES[i] === name);
   });
   if (name === 'review') renderReview();
-  if (name === 'schedule') renderSchedule();
 }
 
 // ── WEEKLY REVIEW ─────────────────────────────────────────────────────
