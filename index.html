@@ -600,7 +600,7 @@ function renderPriorities() {
   document.getElementById('pri-count').innerHTML = `<span style="font-size:12px;color:var(--text-3)">${priorities.length} / 20 priorities</span>`;
   let html = '';
   priorities.forEach((p,i) => {
-    if (i === 5 && priorities.length > 5) html += `<div class="pri-sep">Outside top 5 — avoid at all costs</div>`;
+    if (i === 5 && priorities.length > 5) html += `<div class="pri-sep">Outside top 5</div>`;
     html += `<div class="pri-item" draggable="true" data-idx="${i}"
       ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})" ondrop="dragDrop(event,${i})"
       ondragleave="dragLeave(event)" ondragend="dragEnd()">
